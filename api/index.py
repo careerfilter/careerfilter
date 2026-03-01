@@ -6,8 +6,6 @@ It wraps the Django WSGI application for serverless deployment.
 """
 import os
 import sys
-# api/index.py
-import os
 from django.core.wsgi import get_wsgi_application
 
 # Add the project root to Python path
@@ -27,7 +25,7 @@ def handler(request, **kwargs):
     This function is called by Vercel for each incoming request.
     It delegates to the Django WSGI application.
     """
-    return application(request, **kwargs)
+    return app(request, **kwargs)
 
 # For Vercel Python runtime compatibility
 app = handler
