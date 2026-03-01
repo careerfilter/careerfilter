@@ -10,3 +10,4 @@ django-cloudinary-storage>=0.3.0
 asgiref>=3.7.0
 sqlparse>=0.4.4
 typing_extensions>=4.7.0
+gunicorn==21.2.0
