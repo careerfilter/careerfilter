@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ form_title }} - JobBoard{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="bg-gradient-to-r from-primary-600 to-primary-800 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-white">{{ form_title }}</h1>
+        <p class="text-primary-100 mt-1">
+            {% if form.instance.pk %}
+                Update the job posting details below
+            {% else %}
+                Fill in the details to post a new job
+            {% endif %}
+        </p>
+    </div>
+</section>
+
+<!-- Form Section -->
+<section class="py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <form method="post" enctype="multipart/form-data" class="bg-white rounded-xl shadow-sm border p-6 md:p-8">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Job Information Section -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+                    <i class="fas fa-briefcase mr-2 text-primary-600"></i>
+                    Job Information
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Title -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Job Title <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Company Name -->
+                    <div>
+                        <label for="{{ form.company_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Company Name <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.company_name }}
+                        {% if form.company_name.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.company_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Company Logo -->
+                    <div>
+                        <label for="{{ form.company_logo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Company Logo
+                        </label>
+                        {{ form.company_logo }}
+                        {% if form.company_logo.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.company_logo.errors.0 }}</p>
+                        {% endif %}
+                        {% if form.instance.company_logo %}
+                            <div class="mt-2">
+                                <img src="{{ form.instance.company_logo.url }}" alt="Current logo" class="w-16 h-16 rounded-lg object-cover">
+                                <p class="text-xs text-gray-500 mt-1">Current logo</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Category -->
+                    <div>
+                        <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Category
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.category.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Location & Type Section -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+                    <i class="fas fa-map-marker-alt mr-2 text-primary-600"></i>
+                    Location & Type
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Location -->
+                    <div>
+                        <label for="{{ form.location.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Location <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.location.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Job Type -->
+                    <div>
+                        <label for="{{ form.job_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Job Type <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.job_type }}
+                        {% if form.job_type.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.job_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Salary Range -->
+                    <div>
+                        <label for="{{ form.salary_range.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Salary Range
+                        </label>
+                        {{ form.salary_range }}
+                        {% if form.salary_range.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.salary_range.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Job Details Section -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+                    <i class="fas fa-align-left mr-2 text-primary-600"></i>
+                    Job Details
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- Description -->
+                    <div>
+                        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Job Description <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500">
+                            Describe the role, responsibilities, and what you're looking for in a candidate.
+                        </p>
+                    </div>
+                    
+                    <!-- Requirements -->
+                    <div>
+                        <label for="{{ form.requirements.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Requirements
+                        </label>
+                        {{ form.requirements }}
+                        {% if form.requirements.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.requirements.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500">
+                            List required skills, experience, qualifications, and any other requirements.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Application Section -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+                    <i class="fas fa-paper-plane mr-2 text-primary-600"></i>
+                    Application
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Application Link -->
+                    <div>
+                        <label for="{{ form.application_link.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Application Link
+                        </label>
+                        {{ form.application_link }}
+                        {% if form.application_link.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.application_link.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500">
+                            External URL where candidates can apply
+                        </p>
+                    </div>
+                    
+                    <!-- Application Email -->
+                    <div>
+                        <label for="{{ form.application_email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Application Email
+                        </label>
+                        {{ form.application_email }}
+                        {% if form.application_email.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.application_email.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500">
+                            Email address for receiving applications (alternative to link)
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-blue-700">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Provide at least one application method (link or email). If both are provided, the link will be used.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Status & Dates Section -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+                    <i class="fas fa-cog mr-2 text-primary-600"></i>
+                    Status & Dates
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Status -->
+                    <div>
+                        <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Status
+                        </label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Deadline Date -->
+                    <div>
+                        <label for="{{ form.deadline_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Application Deadline
+                        </label>
+                        {{ form.deadline_date }}
+                        {% if form.deadline_date.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.deadline_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Is Active -->
+                    <div class="flex items-center pt-7">
+                        <label class="flex items-center cursor-pointer">
+                            {{ form.is_active }}
+                            <span class="ml-2 text-sm text-gray-700">Active (visible in listings)</span>
+                        </label>
+                        {% if form.is_active.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.is_active.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t">
+                <button type="submit" class="flex-1 sm:flex-none bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
+                    <i class="fas fa-save mr-2"></i>
+                    {{ form_action }}
+                </button>
+                <a href="{% url 'jobs:job_list' %}" class="flex-1 sm:flex-none text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-8 rounded-lg transition-colors">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-resize textareas
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+</script>
+{% endblock %}

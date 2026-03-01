@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}JobBoard - Find Your Dream Job{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="gradient-hero-alt relative overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+    </div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+                Find Your <span class="text-cyan-300">Dream Job</span> Today
+            </h1>
+            <p class="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+                Discover thousands of job opportunities with top companies. 
+                Your next career move starts here.
+            </p>
+            
+            <!-- Search Form -->
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-4 md:p-6">
+                <form action="{% url 'jobs:job_list' %}" method="get" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <!-- Keyword Search -->
+                    <div class="md:col-span-5 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        {{ search_form.q }}
+                    </div>
+                    
+                    <!-- Location Search -->
+                    <div class="md:col-span-4 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-map-marker-alt text-gray-400"></i>
+                        </div>
+                        {{ search_form.location }}
+                    </div>
+                    
+                    <!-- Search Button -->
+                    <div class="md:col-span-3">
+                        <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
+                            <i class="fas fa-search mr-2"></i>
+                            Search Jobs
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Stats -->
+            <div class="mt-10 flex flex-wrap justify-center gap-8 text-white">
+                <div class="text-center">
+                    <div class="text-3xl font-bold">{{ total_jobs|default:"0" }}+</div>
+                    <div class="text-blue-200">Active Jobs</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold">{{ companies|length|default:"0" }}+</div>
+                    <div class="text-blue-200">Companies</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold">{{ categories|length|default:"0" }}+</div>
+                    <div class="text-blue-200">Categories</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Wave Divider -->
+    <div class="absolute bottom-0 left-0 right-0">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#f9fafb"/>
+        </svg>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Browse by Category</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                Explore opportunities across different industries and find the perfect fit for your skills.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for cat_data in categories %}
+                <a href="{% url 'jobs:job_list_by_category' cat_data.category.slug %}" 
+                   class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 group">
+                    <div class="w-14 h-14 rounded-lg mb-4 flex items-center justify-center text-2xl"
+                         style="background-color: {{ cat_data.category.color }}20;">
+                        {{ cat_data.category.icon|default:"💼" }}
+                    </div>
+                    <h3 class="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                        {{ cat_data.category.name }}
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        {{ cat_data.job_count }} job{{ cat_data.job_count|pluralize }}
+                    </p>
+                </a>
+            {% empty %}
+                <div class="col-span-full text-center py-8 text-gray-500">
+                    <i class="fas fa-folder-open text-4xl mb-4"></i>
+                    <p>No categories available yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Jobs Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Featured Jobs</h2>
+                <p class="text-gray-600">Handpicked opportunities just for you</p>
+            </div>
+            <a href="{% url 'jobs:job_list' %}" class="mt-4 md:mt-0 inline-flex items-center text-primary-600 hover:text-primary-700 font-medium">
+                View All Jobs
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for job in featured_jobs %}
+                <article class="job-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="p-6">
+                        <!-- Header -->
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                {% if job.company_logo %}
+                                    <img src="{{ job.company_logo.url }}" alt="{{ job.company_name }}" 
+                                         class="w-12 h-12 rounded-lg object-cover">
+                                {% else %}
+                                    <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                                        <span class="text-primary-600 font-bold text-lg">
+                                            {{ job.company_name|first|upper }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 line-clamp-1">{{ job.title }}</h3>
+                                    <p class="text-sm text-gray-500">{{ job.company_name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ job.job_type_display_class }}">
+                                {{ job.get_job_type_display }}
+                            </span>
+                            {% if job.category %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ job.category.name }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Details -->
+                        <div class="space-y-2 text-sm text-gray-600 mb-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt w-5 text-gray-400"></i>
+                                <span>{{ job.location }}</span>
+                            </div>
+                            {% if job.salary_range %}
+                                <div class="flex items-center">
+                                    <i class="fas fa-dollar-sign w-5 text-gray-400"></i>
+                                    <span>{{ job.salary_range }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="flex items-center">
+                                <i class="fas fa-clock w-5 text-gray-400"></i>
+                                <span>{{ job.get_time_since_posted }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Action -->
+                        <a href="{{ job.get_absolute_url }}" 
+                           class="block w-full text-center bg-gray-50 hover:bg-primary-50 text-gray-700 hover:text-primary-600 font-medium py-2.5 rounded-lg transition-colors">
+                            View Details
+                        </a>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="col-span-full text-center py-12">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-briefcase text-gray-400 text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No jobs yet</h3>
+                    <p class="text-gray-500 mb-4">Be the first to post a job!</p>
+                    <a href="{% url 'jobs:job_create' %}" class="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                        <i class="fas fa-plus mr-2"></i>
+                        Post a Job
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Job Types Section -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Find Jobs by Type</h2>
+            <p class="text-gray-600">Browse opportunities that match your work preferences</p>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {% for job_type_code, job_type_label in job_types %}
+                <a href="{% url 'jobs:job_list' %}?job_type={{ job_type_code }}" 
+                   class="bg-white rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all duration-300 group">
+                    <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-primary-600 transition-colors">
+                        <i class="fas {% if job_type_code == 'full_time' %}fa-briefcase{% elif job_type_code == 'part_time' %}fa-clock{% elif job_type_code == 'contract' %}fa-file-contract{% elif job_type_code == 'remote' %}fa-laptop-house{% elif job_type_code == 'internship' %}fa-graduation-cap{% else %}fa-user-tie{% endif %} text-primary-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="font-medium text-gray-900 text-sm">{{ job_type_label }}</h3>
+                    <p class="text-xs text-gray-500 mt-1">
+                        {{ job_type_counts|get_item:job_type_label|default:"0" }} jobs
+                    </p>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-16 bg-primary-600">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            Ready to Hire Top Talent?
+        </h2>
+        <p class="text-xl text-primary-100 mb-8">
+            Post your job opening and reach thousands of qualified candidates.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'jobs:job_create' %}" class="bg-white text-primary-600 hover:bg-gray-100 font-semibold py-3 px-8 rounded-lg transition-colors">
+                Post a Job for Free
+            </a>
+            <a href="{% url 'jobs:job_list' %}" class="bg-primary-700 hover:bg-primary-800 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
+                Browse Candidates
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add custom template filter for dict access
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate stats on scroll
+        const stats = document.querySelectorAll('.text-3xl.font-bold');
+        stats.forEach(stat => {
+            const target = parseInt(stat.textContent);
+            if (!isNaN(target)) {
+                let current = 0;
+                const increment = target / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        stat.textContent = target + '+';
+                        clearInterval(timer);
+                    } else {
+                        stat.textContent = Math.floor(current) + '+';
+                    }
+                }, 30);
+            }
+        });
+    });
+</script>
+{% endblock %}

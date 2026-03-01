@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - JobBoard{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="bg-gradient-to-r from-primary-600 to-primary-800 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-white">Dashboard</h1>
+                <p class="text-primary-100 mt-1">Manage your job postings</p>
+            </div>
+            <a href="{% url 'jobs:job_create' %}" class="mt-4 md:mt-0 inline-flex items-center bg-white text-primary-600 hover:bg-gray-100 font-semibold py-2 px-6 rounded-lg transition-colors">
+                <i class="fas fa-plus mr-2"></i>
+                Post New Job
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Jobs</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ stats.total }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-briefcase text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Published</p>
+                        <p class="text-2xl font-bold text-green-600">{{ stats.published }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Drafts</p>
+                        <p class="text-2xl font-bold text-yellow-600">{{ stats.draft }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-alt text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Closed</p>
+                        <p class="text-2xl font-bold text-red-600">{{ stats.closed }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Active</p>
+                        <p class="text-2xl font-bold text-primary-600">{{ stats.active }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-eye text-primary-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Jobs List Section -->
+<section class="pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h2 class="text-lg font-semibold text-gray-900">All Jobs</h2>
+                <div class="flex gap-2">
+                    <a href="{% url 'admin:jobs_job_changelist' %}" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+                        <i class="fas fa-cog mr-2"></i>
+                        Admin View
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posted</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Views</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for job in jobs %}
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        {% if job.company_logo %}
+                                            <img src="{{ job.company_logo.url }}" alt="" class="w-10 h-10 rounded-lg object-cover flex-shrink-0">
+                                        {% else %}
+                                            <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-primary-600 font-bold">{{ job.company_name|first|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ job.title }}</div>
+                                            <div class="text-sm text-gray-500">{{ job.company_name }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ job.job_type_display_class }}">
+                                        {{ job.get_job_type_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    {% if job.status == 'published' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Published
+                                        </span>
+                                    {% elif job.status == 'draft' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            Draft
+                                        </span>
+                                    {% elif job.status == 'closed' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Closed
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            {{ job.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                    {% if not job.is_active %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 ml-1">
+                                            Hidden
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ job.posted_date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    {{ job.views_count }}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ job.get_absolute_url }}" 
+                                           class="text-gray-400 hover:text-primary-600 transition-colors"
+                                           title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'jobs:job_update' job.slug %}" 
+                                           class="text-gray-400 hover:text-blue-600 transition-colors"
+                                           title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'jobs:job_delete' job.slug %}" 
+                                           class="text-gray-400 hover:text-red-600 transition-colors"
+                                           title="Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-briefcase text-gray-400 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-medium text-gray-900 mb-2">No jobs yet</h3>
+                                    <p class="text-gray-500 mb-4">Start by creating your first job posting</p>
+                                    <a href="{% url 'jobs:job_create' %}" class="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Post a Job
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if jobs.has_other_pages %}
+                <div class="px-6 py-4 border-t flex items-center justify-between">
+                    <p class="text-sm text-gray-500">
+                        Showing page {{ jobs.number }} of {{ jobs.paginator.num_pages }}
+                    </p>
+                    <div class="flex gap-2">
+                        {% if jobs.has_previous %}
+                            <a href="?page={{ jobs.previous_page_number }}" class="px-3 py-1 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                                Previous
+                            </a>
+                        {% endif %}
+                        {% if jobs.has_next %}
+                            <a href="?page={{ jobs.next_page_number }}" class="px-3 py-1 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                                Next
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Quick Actions Section -->
+<section class="pb-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{% url 'jobs:job_create' %}" class="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-plus text-primary-600 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-1">Post New Job</h3>
+                <p class="text-sm text-gray-500">Create a new job listing</p>
+            </a>
+            
+            <a href="{% url 'jobs:job_list' %}" class="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-search text-green-600 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-1">View Public Listings</h3>
+                <p class="text-sm text-gray-500">See how jobs appear to candidates</p>
+            </a>
+            
+            <a href="{% url 'admin:index' %}" class="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-cog text-purple-600 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-1">Admin Panel</h3>
+                <p class="text-sm text-gray-500">Access advanced settings</p>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

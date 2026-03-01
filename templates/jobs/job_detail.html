@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ job.title }} at {{ job.company_name }} - JobBoard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-content h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .job-content h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    .job-content ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .job-content ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .job-content p {
+        margin-bottom: 1rem;
+        line-height: 1.7;
+    }
+    .job-content a {
+        color: #2563eb;
+        text-decoration: underline;
+    }
+    .job-content blockquote {
+        border-left: 4px solid #e5e7eb;
+        padding-left: 1rem;
+        margin: 1rem 0;
+        color: #6b7280;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav class="bg-gray-50 border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <ol class="flex items-center space-x-2 text-sm">
+            <li>
+                <a href="{% url 'jobs:home' %}" class="text-gray-500 hover:text-primary-600">Home</a>
+            </li>
+            <li class="text-gray-400">
+                <i class="fas fa-chevron-right text-xs"></i>
+            </li>
+            <li>
+                <a href="{% url 'jobs:job_list' %}" class="text-gray-500 hover:text-primary-600">Jobs</a>
+            </li>
+            {% if job.category %}
+                <li class="text-gray-400">
+                    <i class="fas fa-chevron-right text-xs"></i>
+                </li>
+                <li>
+                    <a href="{{ job.category.get_absolute_url }}" class="text-gray-500 hover:text-primary-600">
+                        {{ job.category.name }}
+                    </a>
+                </li>
+            {% endif %}
+            <li class="text-gray-400">
+                <i class="fas fa-chevron-right text-xs"></i>
+            </li>
+            <li class="text-gray-900 font-medium truncate max-w-xs">{{ job.title }}</li>
+        </ol>
+    </div>
+</nav>
+
+<!-- Job Header -->
+<section class="bg-white border-b py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-start gap-6">
+            <!-- Company Logo -->
+            <div class="flex-shrink-0">
+                {% if job.company_logo %}
+                    <img src="{{ job.company_logo.url }}" alt="{{ job.company_name }}" 
+                         class="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover shadow-md">
+                {% else %}
+                    <div class="w-24 h-24 md:w-32 md:h-32 bg-primary-100 rounded-xl flex items-center justify-center shadow-md">
+                        <span class="text-primary-600 font-bold text-4xl">
+                            {{ job.company_name|first|upper }}
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Job Info -->
+            <div class="flex-1">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{{ job.title }}</h1>
+                        <p class="text-lg text-gray-600 mb-3">{{ job.company_name }}</p>
+                        
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ job.job_type_display_class }}">
+                                {{ job.get_job_type_display }}
+                            </span>
+                            {% if job.category %}
+                                <a href="{{ job.category.get_absolute_url }}" 
+                                   class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
+                                    {{ job.category.name }}
+                                </a>
+                            {% endif %}
+                            {% if job.is_expired %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    Expired
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex flex-col gap-2">
+                        {% if job.get_application_url %}
+                            <a href="{{ job.get_application_url }}" target="_blank"
+                               class="inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg">
+                                <i class="fas fa-external-link-alt mr-2"></i>
+                                Apply Now
+                            </a>
+                        {% endif %}
+                        
+                        {% if user.is_authenticated %}
+                            <div class="flex gap-2">
+                                <a href="{% url 'jobs:job_update' job.slug %}" 
+                                   class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors">
+                                    <i class="fas fa-edit mr-2"></i>
+                                    Edit
+                                </a>
+                                <a href="{% url 'jobs:job_delete' job.slug %}" 
+                                   class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-lg transition-colors">
+                                    <i class="fas fa-trash-alt mr-2"></i>
+                                    Delete
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Meta Info -->
+                <div class="flex flex-wrap items-center gap-6 mt-4 text-sm text-gray-600">
+                    <span class="flex items-center">
+                        <i class="fas fa-map-marker-alt w-5 text-gray-400"></i>
+                        {{ job.location }}
+                    </span>
+                    {% if job.salary_range %}
+                        <span class="flex items-center">
+                            <i class="fas fa-dollar-sign w-5 text-gray-400"></i>
+                            {{ job.salary_range }}
+                        </span>
+                    {% endif %}
+                    <span class="flex items-center">
+                        <i class="fas fa-calendar-alt w-5 text-gray-400"></i>
+                        Posted {{ job.get_time_since_posted }}
+                    </span>
+                    {% if job.deadline_date %}
+                        <span class="flex items-center {% if job.is_expired %}text-red-600{% endif %}">
+                            <i class="fas fa-hourglass-half w-5 text-gray-400"></i>
+                            Deadline: {{ job.deadline_date|date:"F j, Y" }}
+                        </span>
+                    {% endif %}
+                    <span class="flex items-center">
+                        <i class="fas fa-eye w-5 text-gray-400"></i>
+                        {{ job.views_count }} view{{ job.views_count|pluralize }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Job Content -->
+<section class="py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Main Content -->
+            <div class="flex-1">
+                <div class="bg-white rounded-xl shadow-sm border p-6 md:p-8">
+                    <!-- Description -->
+                    <div class="job-content">
+                        <h2>Job Description</h2>
+                        {{ job.description|linebreaks }}
+                    </div>
+                    
+                    <!-- Requirements -->
+                    {% if job.requirements %}
+                        <div class="job-content mt-8">
+                            <h2>Requirements</h2>
+                            {{ job.requirements|linebreaks }}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- How to Apply -->
+                    <div class="mt-8 pt-8 border-t">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">How to Apply</h2>
+                        {% if job.application_link %}
+                            <p class="text-gray-600 mb-4">
+                                Click the button below to apply through our external application portal:
+                            </p>
+                            <a href="{{ job.application_link }}" target="_blank"
+                               class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors">
+                                <i class="fas fa-external-link-alt mr-2"></i>
+                                Apply External
+                            </a>
+                        {% elif job.application_email %}
+                            <p class="text-gray-600 mb-4">
+                                Send your application to:
+                            </p>
+                            <a href="mailto:{{ job.application_email }}" 
+                               class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors">
+                                <i class="fas fa-envelope mr-2"></i>
+                                {{ job.application_email }}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Share Section -->
+                <div class="mt-6 bg-white rounded-xl shadow-sm border p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">Share this job</h3>
+                    <div class="flex gap-3">
+                        <a href="https://twitter.com/intent/tweet?text={{ job.title }} at {{ job.company_name }}&url={{ request.build_absolute_uri }}" 
+                           target="_blank"
+                           class="w-10 h-10 bg-blue-400 hover:bg-blue-500 text-white rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}" 
+                           target="_blank"
+                           class="w-10 h-10 bg-blue-700 hover:bg-blue-800 text-white rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" 
+                           target="_blank"
+                           class="w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <button onclick="copyLink()" 
+                                class="w-10 h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-lg flex items-center justify-center transition-colors"
+                                title="Copy link">
+                            <i class="fas fa-link"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <aside class="lg:w-80 flex-shrink-0 space-y-6">
+                <!-- Company Info -->
+                <div class="bg-white rounded-xl shadow-sm border p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">About the Company</h3>
+                    <div class="flex items-center gap-3 mb-4">
+                        {% if job.company_logo %}
+                            <img src="{{ job.company_logo.url }}" alt="{{ job.company_name }}" 
+                                 class="w-12 h-12 rounded-lg object-cover">
+                        {% else %}
+                            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                                <span class="text-primary-600 font-bold">
+                                    {{ job.company_name|first|upper }}
+                                </span>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <p class="font-medium text-gray-900">{{ job.company_name }}</p>
+                            <p class="text-sm text-gray-500">{{ job.location }}</p>
+                        </div>
+                    </div>
+                    <a href="{% url 'jobs:job_list' %}?q={{ job.company_name|urlencode }}" 
+                       class="block w-full text-center py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                        View all jobs from {{ job.company_name }}
+                    </a>
+                </div>
+                
+                <!-- Job Summary -->
+                <div class="bg-white rounded-xl shadow-sm border p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">Job Summary</h3>
+                    <dl class="space-y-3">
+                        <div>
+                            <dt class="text-sm text-gray-500">Job Type</dt>
+                            <dd class="font-medium text-gray-900">{{ job.get_job_type_display }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm text-gray-500">Location</dt>
+                            <dd class="font-medium text-gray-900">{{ job.location }}</dd>
+                        </div>
+                        {% if job.salary_range %}
+                            <div>
+                                <dt class="text-sm text-gray-500">Salary</dt>
+                                <dd class="font-medium text-gray-900">{{ job.salary_range }}</dd>
+                            </div>
+                        {% endif %}
+                        {% if job.category %}
+                            <div>
+                                <dt class="text-sm text-gray-500">Category</dt>
+                                <dd class="font-medium text-gray-900">{{ job.category.name }}</dd>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <dt class="text-sm text-gray-500">Posted</dt>
+                            <dd class="font-medium text-gray-900">{{ job.posted_date|date:"F j, Y" }}</dd>
+                        </div>
+                        {% if job.deadline_date %}
+                            <div>
+                                <dt class="text-sm text-gray-500">Application Deadline</dt>
+                                <dd class="font-medium {% if job.is_expired %}text-red-600{% else %}text-gray-900{% endif %}">
+                                    {{ job.deadline_date|date:"F j, Y" }}
+                                </dd>
+                            </div>
+                        {% endif %}
+                    </dl>
+                </div>
+                
+                <!-- Related Jobs -->
+                {% if related_jobs %}
+                    <div class="bg-white rounded-xl shadow-sm border p-6">
+                        <h3 class="font-semibold text-gray-900 mb-4">Similar Jobs</h3>
+                        <div class="space-y-4">
+                            {% for related in related_jobs %}
+                                <a href="{{ related.get_absolute_url }}" class="block group">
+                                    <div class="flex items-start gap-3">
+                                        {% if related.company_logo %}
+                                            <img src="{{ related.company_logo.url }}" alt="{{ related.company_name }}" 
+                                                 class="w-10 h-10 rounded-lg object-cover flex-shrink-0">
+                                        {% else %}
+                                            <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-primary-600 font-bold text-sm">
+                                                    {{ related.company_name|first|upper }}
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h4 class="font-medium text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-1">
+                                                {{ related.title }}
+                                            </h4>
+                                            <p class="text-sm text-gray-500">{{ related.company_name }}</p>
+                                            <p class="text-xs text-gray-400">{{ related.get_job_type_display }}</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <a href="{% url 'jobs:job_list' %}" 
+                           class="block w-full text-center mt-4 py-2 text-primary-600 hover:text-primary-700 font-medium">
+                            View all jobs
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                {% endif %}
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href).then(function() {
+            // Show toast notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            toast.textContent = 'Link copied to clipboard!';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        });
+    }
+</script>
+{% endblock %}
