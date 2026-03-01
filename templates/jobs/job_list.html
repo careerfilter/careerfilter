@@ -112,7 +112,7 @@
                                         {{ type_label }}
                                     </span>
                                     <span class="ml-auto text-xs text-gray-400">
-                                        {{ job_type_counts|get_item:type_code|default:"0" }}
+                                        {{ job_type_counts|default:"0" }}
                                     </span>
                                 </label>
                             {% endfor %}
@@ -133,7 +133,7 @@
                                         {{ category.name }}
                                     </span>
                                     <span class="ml-auto text-xs text-gray-400">
-                                        {{ category_counts|get_item:category.id|default:"0" }}
+                                        {{ category_counts|default:"0" }}
                                     </span>
                                 </label>
                             {% endfor %}
