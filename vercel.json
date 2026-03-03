@@ -32,5 +32,9 @@
     "env": {
       "DJANGO_SETTINGS_MODULE": "core.settings"
     }
+  },
+  "name": "core",
+  "scripts": {
+    "prebuild": "python manage.py collectstatic --noinput --clear && python manage.py migrate --noinput"
   }
 }
