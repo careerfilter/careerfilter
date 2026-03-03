@@ -88,6 +88,8 @@
 <section class="py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col lg:flex-row gap-8">
+
+
             <!-- Sidebar Filters -->
             <aside class="lg:w-64 flex-shrink-0">
                 <div class="bg-white rounded-xl shadow-sm border p-6 sticky top-24">
@@ -98,21 +100,54 @@
                         </a>
                     </div>
                     
+                    <!-- Active Filters -->
+                    {% if current_filters.job_type or current_filters.category or current_filters.salary_range %}
+                        <div class="mb-6 p-3 bg-blue-50 rounded-lg">
+                            <h4 class="text-xs font-medium text-blue-700 uppercase mb-2">Active Filters</h4>
+                            <div class="flex flex-wrap gap-2">
+                                {% for type in current_filters.job_type %}
+                                    <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                        {% for code, label in job_types %}{% if code == type %}{{ label }}{% endif %}{% endfor %}
+                                        <button onclick="removeFilter('job_type', '{{ type }}')" class="ml-1 hover:text-blue-900">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </span>
+                                {% endfor %}
+                                {% for cat_slug in current_filters.category %}
+                                    <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                        {% for cat in categories %}{% if cat.slug == cat_slug %}{{ cat.name }}{% endif %}{% endfor %}
+                                        <button onclick="removeFilter('category', '{{ cat_slug }}')" class="ml-1 hover:text-blue-900">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </span>
+                                {% endfor %}
+                                {% if current_filters.salary_range %}
+                                    <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                        Salary: {{ current_filters.salary_range }}
+                                        <button onclick="removeFilter('salary_range', '{{ current_filters.salary_range }}')" class="ml-1 hover:text-blue-900">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
                     <!-- Job Type Filter -->
                     <div class="mb-6">
                         <h4 class="text-sm font-medium text-gray-700 mb-3">Job Type</h4>
-                        <div class="space-y-2">
+                        <div class="space-y-2 max-h-48 overflow-y-auto">
                             {% for type_code, type_label in job_types %}
                                 <label class="flex items-center cursor-pointer group">
                                     <input type="checkbox" name="job_type_filter" value="{{ type_code }}"
-                                           class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                                           {% if current_filters.job_type == type_code %}checked{% endif %}
-                                           onchange="updateFilter('job_type', this.value, this.checked)">
+                                        class="filter-checkbox w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                        data-filter="job_type"
+                                        {% if type_code in current_filters.job_type %}checked{% endif %}>
                                     <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900">
                                         {{ type_label }}
                                     </span>
-                                    <span class="ml-auto text-xs text-gray-400">
-                                        {{ job_type_counts|default:"0" }}
+                                    <span class="ml-auto text-xs text-gray-400" data-count="job-type-{{ type_code }}">
+                                        {{ job_type_counts|get_item:type_code }}
                                     </span>
                                 </label>
                             {% endfor %}
@@ -126,38 +161,59 @@
                             {% for category in categories %}
                                 <label class="flex items-center cursor-pointer group">
                                     <input type="checkbox" name="category_filter" value="{{ category.slug }}"
-                                           class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                                           {% if current_filters.category == category.slug %}checked{% endif %}
-                                           onchange="updateFilter('category', this.value, this.checked)">
+                                        class="filter-checkbox w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                        data-filter="category"
+                                        {% if category.slug in current_filters.category %}checked{% endif %}>
                                     <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900">
                                         {{ category.name }}
                                     </span>
-                                    <span class="ml-auto text-xs text-gray-400">
-                                        {{ category_counts|default:"0" }}
+                                    <span class="ml-auto text-xs text-gray-400" data-count="category-{{ category.slug }}">
+                                        {{ category_counts|get_item:category.slug }}
                                     </span>
                                 </label>
                             {% endfor %}
                         </div>
                     </div>
                     
-                    <!-- Salary Range (Visual Only) -->
-                    <div>
+                    <!-- Salary Range Filter -->
+                    <div class="mb-6">
                         <h4 class="text-sm font-medium text-gray-700 mb-3">Salary Range</h4>
                         <div class="space-y-2">
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                                <input type="radio" name="salary_range" value="0-50k"
+                                    class="filter-radio w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                                    data-filter="salary_range"
+                                    {% if current_filters.salary_range == '0-50k' %}checked{% endif %}>
                                 <span class="ml-2 text-sm text-gray-600">$0 - $50k</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                                <input type="radio" name="salary_range" value="50k-100k"
+                                    class="filter-radio w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                                    data-filter="salary_range"
+                                    {% if current_filters.salary_range == '50k-100k' %}checked{% endif %}>
                                 <span class="ml-2 text-sm text-gray-600">$50k - $100k</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                                <input type="radio" name="salary_range" value="100k-plus"
+                                    class="filter-radio w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                                    data-filter="salary_range"
+                                    {% if current_filters.salary_range == '100k-plus' %}checked{% endif %}>
                                 <span class="ml-2 text-sm text-gray-600">$100k+</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="salary_range" value=""
+                                    class="filter-radio w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                                    data-filter="salary_range"
+                                    {% if not current_filters.salary_range %}checked{% endif %}>
+                                <span class="ml-2 text-sm text-gray-600">Any</span>
                             </label>
                         </div>
                     </div>
+                    
+                    <!-- Apply Filters Button (Mobile) -->
+                    <button id="apply-filters-mobile" class="w-full lg:hidden bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors mt-4">
+                        Apply Filters
+                    </button>
                 </div>
             </aside>
             
@@ -337,14 +393,207 @@
 
 {% block extra_js %}
 <script>
-    function updateFilter(key, value, checked) {
-        const url = new URL(window.location.href);
-        if (checked) {
-            url.searchParams.set(key, value);
-        } else {
-            url.searchParams.delete(key);
+    // Modern filtering with AJAX
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterCheckboxes = document.querySelectorAll('.filter-checkbox');
+        const filterRadios = document.querySelectorAll('.filter-radio');
+        const jobContainer = document.querySelector('.space-y-4');
+        const resultsHeader = document.querySelector('.text-gray-600');
+        let debounceTimer;
+
+        // Function to update URL and fetch results
+        function updateFilters() {
+            const url = new URL(window.location.href);
+            
+            // Handle checkboxes (multiple values)
+            filterCheckboxes.forEach(checkbox => {
+                const filterName = checkbox.dataset.filter;
+                if (checkbox.checked) {
+                    url.searchParams.append(filterName, checkbox.value);
+                } else {
+                    // Remove this specific value
+                    const values = url.searchParams.getAll(filterName);
+                    url.searchParams.delete(filterName);
+                    values.forEach(value => {
+                        if (value !== checkbox.value) {
+                            url.searchParams.append(filterName, value);
+                        }
+                    });
+                }
+            });
+
+            // Handle radio buttons (single value)
+            filterRadios.forEach(radio => {
+                const filterName = radio.dataset.filter;
+                if (radio.checked) {
+                    if (radio.value) {
+                        url.searchParams.set(filterName, radio.value);
+                    } else {
+                        url.searchParams.delete(filterName);
+                    }
+                }
+            });
+
+            // Update URL without page reload
+            window.history.pushState({}, '', url);
+
+            // Fetch filtered results
+            fetchResults(url);
         }
+
+        // Fetch results via AJAX
+        function fetchResults(url) {
+            // Add AJAX header
+            url.searchParams.set('ajax', '1');
+            
+            // Show loading state
+            if (jobContainer) {
+                jobContainer.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-primary-600"></i></div>';
+            }
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (jobContainer) {
+                        jobContainer.innerHTML = data.html;
+                    }
+                    if (resultsHeader) {
+                        resultsHeader.innerHTML = `Showing <span class="font-semibold">${data.start_index || 0}-${data.end_index || 0}</span> of <span class="font-semibold">${data.count || 0}</span> jobs`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Fallback to page reload
+                    window.location.href = url.toString().replace('&ajax=1', '');
+                });
+            }, 300);
+        }
+
+        // Add event listeners to checkboxes
+        filterCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateFilters);
+        });
+
+        // Add event listeners to radio buttons
+        filterRadios.forEach(radio => {
+            radio.addEventListener('change', updateFilters);
+        });
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function() {
+            // Reload page to reflect URL changes
+            window.location.reload();
+        });
+
+        // Mobile apply button
+        const applyMobileBtn = document.getElementById('apply-filters-mobile');
+        if (applyMobileBtn) {
+            applyMobileBtn.addEventListener('click', updateFilters);
+        }
+
+        // Real-time search suggestions
+        const searchInput = document.querySelector('input[name="q"]');
+        if (searchInput) {
+            let suggestionsContainer = document.createElement('div');
+            suggestionsContainer.className = 'absolute z-50 bg-white border rounded-lg shadow-lg mt-1 w-full hidden';
+            searchInput.parentNode.style.position = 'relative';
+            searchInput.parentNode.appendChild(suggestionsContainer);
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                if (query.length < 2) {
+                    suggestionsContainer.classList.add('hidden');
+                    return;
+                }
+
+                fetch(`/api/search-suggestions/?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.titles.length || data.companies.length || data.locations.length) {
+                            suggestionsContainer.innerHTML = '';
+                            suggestionsContainer.classList.remove('hidden');
+
+                            if (data.titles.length) {
+                                suggestionsContainer.innerHTML += '<div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">Job Titles</div>';
+                                data.titles.forEach(title => {
+                                    suggestionsContainer.innerHTML += `
+                                        <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="setSearchValue('${title}')">
+                                            <i class="fas fa-briefcase text-gray-400 w-5"></i> ${title}
+                                        </div>
+                                    `;
+                                });
+                            }
+
+                            if (data.companies.length) {
+                                suggestionsContainer.innerHTML += '<div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">Companies</div>';
+                                data.companies.forEach(company => {
+                                    suggestionsContainer.innerHTML += `
+                                        <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="setSearchValue('${company}')">
+                                            <i class="fas fa-building text-gray-400 w-5"></i> ${company}
+                                        </div>
+                                    `;
+                                });
+                            }
+
+                            if (data.locations.length) {
+                                suggestionsContainer.innerHTML += '<div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">Locations</div>';
+                                data.locations.forEach(location => {
+                                    suggestionsContainer.innerHTML += `
+                                        <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="setLocationValue('${location}')">
+                                            <i class="fas fa-map-marker-alt text-gray-400 w-5"></i> ${location}
+                                        </div>
+                                    `;
+                                });
+                            }
+                        } else {
+                            suggestionsContainer.classList.add('hidden');
+                        }
+                    });
+            });
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                    suggestionsContainer.classList.add('hidden');
+                }
+            });
+        }
+    });
+
+    // Helper functions for suggestions
+    window.setSearchValue = function(value) {
+        document.querySelector('input[name="q"]').value = value;
+        document.querySelector('input[name="q"]').form.submit();
+    };
+
+    window.setLocationValue = function(value) {
+        document.querySelector('input[name="location"]').value = value;
+        document.querySelector('input[name="location"]').form.submit();
+    };
+
+    // Function to remove a specific filter
+    window.removeFilter = function(key, value) {
+        const url = new URL(window.location.href);
+        const values = url.searchParams.getAll(key);
+        url.searchParams.delete(key);
+        values.forEach(v => {
+            if (v !== value) {
+                url.searchParams.append(key, v);
+            }
+        });
         window.location.href = url.toString();
-    }
+    };
+
+    // Function to clear all filters
+    window.clearFilters = function() {
+        window.location.href = '{% url "jobs:job_list" %}';
+    };
+
 </script>
 {% endblock %}

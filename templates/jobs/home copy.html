@@ -220,7 +220,7 @@
                     </div>
                     <h3 class="font-medium text-gray-900 text-sm">{{ job_type_label }}</h3>
                     <p class="text-xs text-gray-500 mt-1">
-                        {{ job_type_counts|get_item:job_type_code }} jobs
+                        {{ job_type_counts|default:"0" }} jobs
                     </p>
                 </a>
             {% endfor %}
